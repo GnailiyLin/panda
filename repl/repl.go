@@ -5,20 +5,27 @@ import (
 	"fmt"
 	"io"
 	"panda/lexer"
-	"panda/token"
+	"panda/parser"
 )
 
 const Prompt = ">>"
 
-func Start(in io.Reader, out io.Writer) {
-	var err error
+const Panda = `
+   ________    ________    ________     ______     ________ 
+  /        \  /        \  /    /   \  _/      \\  /        \
+ /         / /         / /         / /        // /         /
+//      __/ /         / /         / /         / /         / 
+\\_____/    \___/____/  \__/_____/  \________/  \___/____/  
 
+`
+
+func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+
+	fmt.Fprintf(out, Panda)
+
 	for {
-		_, err = fmt.Fprintf(out, Prompt)
-		if err != nil {
-			return
-		}
+		fmt.Fprintf(out, Prompt)
 
 		scanned := scanner.Scan()
 		if !scanned {
@@ -27,12 +34,23 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			_, err = fmt.Fprintf(out, "%+v\n", tok)
-			if err != nil {
-				return
-			}
+		program := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			printParseErrors(out, p.Errors())
+			continue
 		}
+
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
+	}
+}
+
+func printParseErrors(out io.Writer, errors []string) {
+	io.WriteString(out, "  parser errors:\n")
+
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
