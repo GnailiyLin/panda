@@ -27,11 +27,13 @@ const (
 
 	Comma     = ","
 	Semicolon = ";"
-
-	LParen = "("
-	RParen = ")"
-	LBrace = "{"
-	RBrace = "}"
+	Colon     = ":"
+	LParen    = "("
+	RParen    = ")"
+	LBrace    = "{"
+	RBrace    = "}"
+	LBracket  = "["
+	RBracket  = "]"
 
 	Function = "function"
 	Let      = "let"
@@ -40,6 +42,8 @@ const (
 	If       = "if"
 	Else     = "else"
 	Return   = "return"
+
+	String = "string"
 
 	EOF = "EOF"
 )

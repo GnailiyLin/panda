@@ -3,11 +3,14 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"panda/ast"
 	"strings"
 )
 
 type Type string
+
+type BuiltinFunction func(args ...Object) Object
 
 const (
 	IntegerObj = "Integer"
@@ -17,6 +20,11 @@ const (
 	ReturnValueObj = "ReturnValue"
 
 	FunctionObj = "Function"
+
+	StringObj  = "String"
+	ArrayObj   = "Array"
+	HashObj    = "Hash"
+	BuiltinObj = "Builtin"
 
 	ErrorObj = "Error"
 )
@@ -100,6 +108,68 @@ func (f *Function) Inspect() string {
 	return out.String()
 }
 
+type String struct {
+	Value string
+}
+
+func (s *String) Type() Type {
+	return StringObj
+}
+
+func (s *String) Inspect() string {
+	return s.Value
+}
+
+type Array struct {
+	Elements []Object
+}
+
+func (a *Array) Type() Type {
+	return ArrayObj
+}
+
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+
+	var elements []string
+	for _, e := range a.Elements {
+		elements = append(elements, e.Inspect())
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ","))
+	out.WriteString("]")
+
+	return out.String()
+}
+
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+func (h *Hash) Type() Type {
+	return HashObj
+}
+
+func (h *Hash) Inspect() string {
+	var out bytes.Buffer
+
+	paris := []string{}
+	for _, pair := range h.Pairs {
+		paris = append(paris, fmt.Sprintf("%s, %s", pair.Key.Inspect(), pair.Value.Inspect()))
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(paris, ", "))
+	out.WriteString("}")
+
+	return out.String()
+}
+
 type Error struct {
 	Message string
 }
@@ -110,4 +180,51 @@ func (e *Error) Type() Type {
 
 func (e *Error) Inspect() string {
 	return "ERROR: " + e.Message
+}
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() Type {
+	return BuiltinObj
+}
+
+func (b *Builtin) Inspect() string {
+	return "builtin function"
+}
+
+type HashKey struct {
+	Type  Type
+	Value uint64
+}
+
+type Hashable interface {
+	HashKey() HashKey
+}
+
+func (i *Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+
+func (b *Boolean) HashKey() HashKey {
+	var value uint64
+
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+
+	return HashKey{Type: b.Type(), Value: value}
+}
+
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	_, err := h.Write([]byte(s.Value))
+	if err != nil {
+		return HashKey{}
+	}
+
+	return HashKey{Type: s.Type(), Value: h.Sum64()}
 }
