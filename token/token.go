@@ -45,10 +45,12 @@ const (
 
 	String = "string"
 
+	Macro = "macro"
+
 	EOF = "EOF"
 )
 
-var keyword = map[string]Type{
+var keywords = map[string]Type{
 	"fn":     Function,
 	"let":    Let,
 	"true":   True,
@@ -56,10 +58,11 @@ var keyword = map[string]Type{
 	"if":     If,
 	"else":   Else,
 	"return": Return,
+	"macro":  Macro,
 }
 
 func LookupIdent(ident string) Type {
-	if tok, ok := keyword[ident]; ok {
+	if tok, ok := keywords[ident]; ok {
 		return tok
 	}
 	return Ident
