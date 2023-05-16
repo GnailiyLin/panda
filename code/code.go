@@ -10,7 +10,7 @@ type Opcode byte
 
 const (
 	OpConstant Opcode = iota
-	OoPop
+	OpPop
 
 	OpAdd
 	OpSub
@@ -26,6 +26,19 @@ const (
 
 	OpMinus
 	OpBang
+
+	OpJump
+	OpJumpNotTruthy
+
+	OpNull
+
+	OpSetGlobal
+	OpGetGlobal
+
+	OpArray
+	OpHash
+
+	OpIndex
 )
 
 type Definition struct {
@@ -35,7 +48,7 @@ type Definition struct {
 
 var definitions = map[Opcode]*Definition{
 	OpConstant: {"OpConstant", []int{2}},
-	OoPop:      {"OpPop", []int{}},
+	OpPop:      {"OpPop", []int{}},
 
 	OpAdd: {"OpAdd", []int{}},
 	OpSub: {"OpSub", []int{}},
@@ -51,6 +64,19 @@ var definitions = map[Opcode]*Definition{
 
 	OpMinus: {"OpMinus", []int{}},
 	OpBang:  {"OpBang", []int{}},
+
+	OpJump:          {"OpJump", []int{2}},
+	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
+
+	OpNull: {"OpNull", []int{}},
+
+	OpSetGlobal: {"OpSetGlobal", []int{2}},
+	OpGetGlobal: {"OpGetGlobal", []int{2}},
+
+	OpArray: {"OpArray", []int{2}},
+	OpHash:  {"OpHash", []int{2}},
+
+	OpIndex: {"OpIndex", []int{}},
 }
 
 type Instructions []byte

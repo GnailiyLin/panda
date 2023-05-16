@@ -6,6 +6,7 @@ import (
 	"io"
 	"panda/compiler"
 	"panda/lexer"
+	"panda/object"
 	"panda/parser"
 	"panda/vm"
 )
@@ -26,6 +27,10 @@ func Start(in io.Reader, out io.Writer) {
 
 	fmt.Fprintf(out, Panda)
 
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalsSize)
+	symbolTable := compiler.NewSymbolTable()
+
 	for {
 		fmt.Fprintf(out, Prompt)
 
@@ -44,7 +49,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		comp := compiler.New()
+		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
@@ -52,7 +57,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		machine := vm.New(comp.Bytecode())
+		machine := vm.NewWithGlobalsStore(comp.Bytecode(), globals)
 		err = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
