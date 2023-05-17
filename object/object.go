@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"panda/ast"
+	"panda/code"
 	"strings"
 )
 
@@ -19,7 +20,8 @@ const (
 
 	ReturnValueObj = "ReturnValue"
 
-	FunctionObj = "Function"
+	FunctionObj         = "Function"
+	CompiledFunctionObj = "CompiledFunction"
 
 	StringObj  = "String"
 	ArrayObj   = "Array"
@@ -106,6 +108,20 @@ func (f *Function) Inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
+}
+
+type CompiledFunction struct {
+	Instructions  code.Instructions
+	LocalsNum     int
+	ParametersNum int
+}
+
+func (cf *CompiledFunction) Type() Type {
+	return CompiledFunctionObj
+}
+
+func (cf *CompiledFunction) Inspect() string {
+	return fmt.Sprintf("CompiledFunction[%p]", cf)
 }
 
 type String struct {
