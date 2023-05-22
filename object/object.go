@@ -27,6 +27,7 @@ const (
 	ArrayObj   = "Array"
 	HashObj    = "Hash"
 	BuiltinObj = "Builtin"
+	ClosureObj = "Closure"
 
 	ErrorObj = "Error"
 )
@@ -186,30 +187,6 @@ func (h *Hash) Inspect() string {
 	return out.String()
 }
 
-type Error struct {
-	Message string
-}
-
-func (e *Error) Type() Type {
-	return ErrorObj
-}
-
-func (e *Error) Inspect() string {
-	return "ERROR: " + e.Message
-}
-
-type Builtin struct {
-	Fn BuiltinFunction
-}
-
-func (b *Builtin) Type() Type {
-	return BuiltinObj
-}
-
-func (b *Builtin) Inspect() string {
-	return "builtin function"
-}
-
 type HashKey struct {
 	Type  Type
 	Value uint64
@@ -243,4 +220,41 @@ func (s *String) HashKey() HashKey {
 	}
 
 	return HashKey{Type: s.Type(), Value: h.Sum64()}
+}
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() Type {
+	return BuiltinObj
+}
+
+func (b *Builtin) Inspect() string {
+	return "builtin function"
+}
+
+type Closure struct {
+	Fn   *CompiledFunction
+	Free []Object
+}
+
+func (c *Closure) Type() Type {
+	return ClosureObj
+}
+
+func (c *Closure) Inspect() string {
+	return fmt.Sprintf("Closure[%p]", c)
+}
+
+type Error struct {
+	Message string
+}
+
+func (e *Error) Type() Type {
+	return ErrorObj
+}
+
+func (e *Error) Inspect() string {
+	return "ERROR: " + e.Message
 }

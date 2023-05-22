@@ -37,6 +37,7 @@ const (
 	OpSetLocal
 	OpGetLocal
 	OpGetBuiltin
+	OpGetFree
 
 	OpArray
 	OpHash
@@ -46,6 +47,9 @@ const (
 	OpCall
 	OpReturn
 	OpReturnValue
+
+	OpClosure
+	OpCurrentClosure
 )
 
 type Definition struct {
@@ -82,6 +86,7 @@ var definitions = map[Opcode]*Definition{
 	OpSetLocal:   {"OpSetLocal", []int{1}},
 	OpGetLocal:   {"OpGetLocal", []int{1}},
 	OpGetBuiltin: {"OpGetBuiltin", []int{1}},
+	OpGetFree:    {"OpGetFree", []int{1}},
 
 	OpArray: {"OpArray", []int{2}},
 	OpHash:  {"OpHash", []int{2}},
@@ -91,6 +96,9 @@ var definitions = map[Opcode]*Definition{
 	OpCall:        {"OpCall", []int{1}},
 	OpReturn:      {"OpReturn", []int{}},
 	OpReturnValue: {"OpReturnValue", []int{}},
+
+	OpClosure:        {"OpClosure", []int{2, 1}},
+	OpCurrentClosure: {"OpCurrentClosure", []int{}},
 }
 
 type Instructions []byte
@@ -127,6 +135,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	case 2:
+		return fmt.Sprintf("%s %d %d", def.Name, operands[0], operands[1])
 	}
 
 	return fmt.Sprintf("Error: unhandled operandCount for %s\n", def.Name)
@@ -177,7 +187,7 @@ func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
 	for i, width := range def.OperandWidths {
 		switch width {
 		case 1:
-			operands[i] = int(ReadUint8(ins[offset:1]))
+			operands[i] = int(ReadUint8(ins[offset:]))
 		case 2:
 			operands[i] = int(ReadUint16(ins[offset:]))
 		}
